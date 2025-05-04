@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CreditCard, PieChart, Settings } from "lucide-react";
+import { LayoutDashboard, CreditCard, PieChart, Settings, Receipt } from "lucide-react";
 
 export function MainNav() {
   const pathname = usePathname();
@@ -22,10 +22,10 @@ export function MainNav() {
       active: pathname === "/accounts",
     },
     {
-      href: "/analytics",
-      label: "Analytics",
-      icon: PieChart,
-      active: pathname === "/analytics",
+      href: "/expenses",
+      label: "Expenses",
+      icon: Receipt,
+      active: pathname === "/expenses",
     },
     {
       href: "/settings",
