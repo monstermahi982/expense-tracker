@@ -78,7 +78,7 @@ const categoryIcons: Record<string, any> = {
   entertainment: PartyPopper,
 };
 
-const availableTags = [
+export const availableTags = [
   { id: "essential", name: "Essential", color: "bg-emerald-500" },
   { id: "recurring", name: "Recurring", color: "bg-blue-500" },
   { id: "discretionary", name: "Discretionary", color: "bg-amber-500" },
