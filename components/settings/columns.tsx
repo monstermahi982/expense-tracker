@@ -12,18 +12,18 @@ import { Badge } from "../ui/badge";
 import { Switch } from "../ui/switch";
 
 const defaultColumns = [
-    { id: "date", name: "Date", enabled: true, fixed: true },
-    { id: "title", name: "Title", enabled: true, editable: true, fixed: false },
-    { id: "bank", name: "Bank", enabled: true, fixed: false },
-    { id: "amount", name: "Amount", enabled: true, fixed: true },
-    { id: "month", name: "Month", enabled: true, fixed: false },
-    { id: "year", name: "Year", enabled: true, fixed: false },
-    { id: "tag", name: "Tag", enabled: true, editable: true, fixed: false },
-    { id: "actions", name: "Actions", enabled: true, fixed: true },
-  ];
+  { id: "date", name: "Date", enabled: true, fixed: true },
+  { id: "title", name: "Title", enabled: true, editable: true, fixed: false },
+  { id: "bank", name: "Bank", enabled: true, fixed: false },
+  { id: "amount", name: "Amount", enabled: true, fixed: true },
+  { id: "month", name: "Month", enabled: true, fixed: false },
+  { id: "year", name: "Year", enabled: true, fixed: false },
+  { id: "tag", name: "Tag", enabled: true, editable: true, fixed: false },
+  { id: "actions", name: "Actions", enabled: true, fixed: true },
+];
 
 const ColumnsComponent = () => {
-    const [columns, setColumns] = useState(defaultColumns);
+  const [columns, setColumns] = useState(defaultColumns);
 
   // Column functions
   const toggleColumn = (id) => {
