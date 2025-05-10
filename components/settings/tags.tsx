@@ -152,7 +152,7 @@ const TagsComponent = ({}: any) => {
             </div>
           </div>
 
-          <div className="neopop-card bg-white rounded-lg ">
+          <div className="neopop-card rounded-lg ">
             <h3 className="text-lg font-bold p-4 flex items-center">
               <Tag className="inline mr-2 h-5 w-5" />
               Manage Tags

@@ -17,7 +17,7 @@ const SettingsPage = () => {
   return (
     <DashboardLayout>
       <div className="mx-5 md:mx-20 my-5">
-        <Card className="neopop-card backdrop-blur-sm bg-white/80 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.8)] border-2 border-black overflow-hidden">
+        <Card className="neopop-card backdrop-blur-sm shadow-[8px_8px_0px_0px_rgba(0,0,0,0.8)] border-2 overflow-hidden">
           <CardHeader className="border-b-1 border-black">
             <div className="flex items-center space-x-2">
               <Settings className="h-6 w-6" />
