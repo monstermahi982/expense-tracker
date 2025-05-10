@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -49,11 +49,18 @@ import {
   Plane,
   PartyPopper,
   Building,
+  PlusCircle,
+  RouteOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { expenses, bankAccounts } from "@/lib/data";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
+import { useExpenseStore } from "@/store/expenseStore";
+import { Expense } from "@/interfaces/expense";
+import { MONTHS } from "@/utils/constant";
+import { useBankStore } from "@/store/bankStore";
+import { Bank } from "@/server/bank";
 
 const categoryIcons: Record<string, any> = {
   shopping: ShoppingBag,
@@ -69,8 +76,17 @@ const categoryIcons: Record<string, any> = {
 const Expenses = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBank, setSelectedBank] = useState<string>("");
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
-  const [selectedYear, setSelectedYear] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    (new Date().getMonth() + 1).toString()
+  );
+  const [selectedYear, setSelectedYear] = useState<string>(
+    new Date().getFullYear().toString()
+  );
+  const bankStore = useBankStore();
+  const [bankList, setBankList] = useState<Bank[]>([]);
+  const expenseStore = useExpenseStore();
+  const [expenseList, setExpenseList] = useState<any>([]);
+  const [expenseTotal, setExpenseTotal] = useState<any>(0);
 
   const filteredExpenses = expenses.filter((expense) => {
     const matchesSearch =
@@ -102,6 +118,49 @@ const Expenses = () => {
     return <Icon className="h-4 w-4" />;
   };
 
+  const getBanksData = async () => {
+    await bankStore.getBanks();
+    setBankList(useBankStore.getState().bankList);
+  };
+
+  const hasFetched = useRef(false);
+  useEffect(() => {
+    if (!hasFetched.current) {
+      getBanksData();
+      hasFetched.current = true;
+    }
+  }, []);
+
+  const getExpenseData = async (
+    month: number,
+    year: number,
+    bankId: string | undefined = undefined
+  ) => {
+    await expenseStore.getExpenses({ month: month, year: year, bankId });
+    if (useExpenseStore.getState().expenses?.expenses?.length > 0) {
+      setExpenseList(useExpenseStore.getState().expenses?.expenses);
+      setExpenseTotal(useExpenseStore.getState().expenses?.total);
+    } else {
+      setExpenseList([]);
+      setExpenseTotal(0);
+    }
+  };
+
+  const resetFilters = async () => {
+    await getExpenseData(new Date().getMonth() + 1, new Date().getFullYear());
+    setSelectedMonth((new Date().getMonth() + 1).toString());
+    setSelectedYear(new Date().getFullYear().toString());
+    setSelectedBank("");
+  };
+
+  useEffect(() => {
+    getExpenseData(Number(selectedMonth), Number(selectedYear), selectedBank);
+  }, [selectedBank || selectedMonth || selectedYear]);
+
+  useEffect(() => {
+    getExpenseData(new Date().getMonth() + 1, new Date().getFullYear());
+  }, []);
+
   return (
     <DashboardLayout>
       <Card className="neopop-card mx-5 md:mx-20 my-5">
@@ -113,40 +172,47 @@ const Expenses = () => {
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2 w-full md:w-auto">
-            <Select onValueChange={(value) => setSelectedBank(value)}>
+            <Select
+              value={selectedBank}
+              onValueChange={(value) => setSelectedBank(value)}
+            >
               <SelectTrigger className="w-[200px] neopop-select">
                 <SelectValue placeholder="Select Bank" />
               </SelectTrigger>
               <SelectContent>
-                {bankAccounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
+                {bankList.map((account) => (
+                  <SelectItem key={account._id} value={account._id}>
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 rounded-full bg-primary/20 flex items-center justify-center">
                         <Building className="h-3 w-3" />
                       </div>
-                      <span>
-                        {account.name} • {account.institution}
-                      </span>
+                      <span>{account.name}</span>
                     </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Select onValueChange={(value) => setSelectedMonth(value)}>
+            <Select
+              value={selectedMonth}
+              onValueChange={(value) => setSelectedMonth(value)}
+            >
               <SelectTrigger className="w-[120px] neopop-select">
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
               <SelectContent>
                 {[...Array(12)].map((_, i) => (
                   <SelectItem key={i + 1} value={(i + 1).toString()}>
-                    {i + 1}
+                    {MONTHS[i]}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Select onValueChange={(value) => setSelectedYear(value)}>
+            <Select
+              value={selectedYear}
+              onValueChange={(value) => setSelectedYear(value)}
+            >
               <SelectTrigger className="w-[120px] neopop-select">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
@@ -158,72 +224,57 @@ const Expenses = () => {
                 ))}
               </SelectContent>
             </Select>
+
+            <Button
+              className="neopop-btn cursor-pointer"
+              onClick={resetFilters}
+            >
+              <RouteOff className="h-4 w-4" />
+            </Button>
           </div>
         </CardHeader>
 
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-muted/50">
-                <TableRow>
-                  <TableHead className="w-[100px]">Date</TableHead>
-                  <TableHead className="min-w-[200px]">Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Account</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-            </Table>
-
-            <div className="max-h-[450px] overflow-y-auto">
+            <div className="max-h-[500px] overflow-y-auto">
               <Table>
+                <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Bank</TableHead>
+                    <TableHead className="text-left">Amount</TableHead>
+                    <TableHead className="w-[50px]">Month</TableHead>
+                    <TableHead className="w-[50px]">Year</TableHead>
+                    <TableHead className="w-[50px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
                 <TableBody>
-                  {filteredExpenses.length === 0 ? (
+                  {expenseList?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center">
+                      <TableCell colSpan={7} className="h-24 text-center">
                         No expenses found.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredExpenses.map((expense) => (
-                      <TableRow key={expense.id} className="group">
+                    expenseList.map((expense: Expense) => (
+                      <TableRow
+                        key={expense.id}
+                        className="group neopop-card hover:bg-purple-400"
+                      >
                         <TableCell className="font-medium">
                           {formatDate(expense.date)}
                         </TableCell>
                         <TableCell>{expense.title}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "flex w-fit items-center gap-1 transition-all",
-                              expense.category.toLowerCase() === "shopping" &&
-                                "bg-chart-1/10 text-chart-1 hover:bg-chart-1/20",
-                              expense.category.toLowerCase() === "food" &&
-                                "bg-chart-2/10 text-chart-2 hover:bg-chart-2/20",
-                              expense.category.toLowerCase() === "housing" &&
-                                "bg-chart-3/10 text-chart-3 hover:bg-chart-3/20",
-                              expense.category.toLowerCase() ===
-                                "transportation" &&
-                                "bg-chart-4/10 text-chart-4 hover:bg-chart-4/20",
-                              expense.category.toLowerCase() === "health" &&
-                                "bg-red-500/10 text-red-500 hover:bg-red-500/20",
-                              expense.category.toLowerCase() === "work" &&
-                                "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
-                              expense.category.toLowerCase() === "travel" &&
-                                "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20",
-                              expense.category.toLowerCase() ===
-                                "entertainment" &&
-                                "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"
-                            )}
-                          >
-                            {getCategoryIcon(expense.category)}
-                            {expense.category}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{expense.account}</TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell>{expense.bankName}</TableCell>
+                        <TableCell className="text-left font-medium">
                           {formatCurrency(expense.amount)}
+                        </TableCell>
+                        <TableCell className="text-left font-medium">
+                          {MONTHS[expense.month]}
+                        </TableCell>
+                        <TableCell className="text-left font-medium">
+                          {expense.year}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -262,7 +313,7 @@ const Expenses = () => {
 
             {/* Total amount */}
             <div className="flex justify-end px-4 py-3 border-t bg-muted/50 text-sm font-medium">
-              Total: {formatCurrency(totalAmount)}
+              Total: {formatCurrency(expenseTotal)}
             </div>
           </div>
         </CardContent>

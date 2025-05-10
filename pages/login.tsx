@@ -13,19 +13,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setLoading(true);
 
     try {
       // Call the login API function
-      const response = await loginUser({ email, password });
-
       // After successful login, store user data in Zustand store
       login({
-        token: response.token,
-        email: response.email,
-        name: response.name,
+        email,
+        password
       });
 
       // Redirect user to the home/dashboard page
@@ -51,52 +47,51 @@ export default function Login() {
             Login
           </h2>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
-                Email
-              </label>
-              <Input
-                type="email"
-                className="pl-7 neopop-input"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium mb-1">
+              Email
+            </label>
+            <Input
+              type="email"
+              className="pl-7 neopop-input"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium mb-1"
-              >
-                Password
-              </label>
-              <Input
-                type="password"
-                className="pl-7 neopop-input"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium mb-1"
+            >
+              Password
+            </label>
+            <Input
+              type="password"
+              className="pl-7 neopop-input"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-            <div className="text-sm text-right text-primary">
-              <a href="#" className="hover:underline">
-                Forgot password?
-              </a>
-            </div>
+          <div className="text-sm text-right text-primary">
+            <a href="#" className="hover:underline">
+              Forgot password?
+            </a>
+          </div>
 
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                className="neopop-btn px-10 cursor-pointer py-2 rounded-xl"
-                disabled={loading}
-              >
-                {loading ? "Logging in..." : "Submit"}
-              </button>
-            </div>
-          </form>
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="neopop-btn px-10 cursor-pointer py-2 rounded-xl"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Submit"}
+            </button>
+          </div>
 
           <p className="text-sm mt-6 text-center text-gray-600">
             Don’t have an account?{" "}

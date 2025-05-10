@@ -2,6 +2,11 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { connectDB } from "@/lib/mongodb";
 import { Expense } from "@/models/Expense";
 import mongoose, { Types } from "mongoose";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+interface AuthTokenPayload extends JwtPayload {
+  userId: string;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,6 +21,20 @@ export default async function handler(
     case "POST": {
       const { expenses } = body;
 
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res
+          .status(401)
+          .json({ error: "Missing or invalid Authorization header" });
+      }
+
+      const token = authHeader.split(" ")[1];
+      const secret = process.env.JWT_SECRET || "monster123";
+
+      if (!secret) {
+        return res.status(500).json({ error: "JWT secret is not configured" });
+      }
+
       if (!Array.isArray(expenses) || expenses.length === 0) {
         return res
           .status(400)
@@ -24,7 +43,6 @@ export default async function handler(
 
       const isValid = expenses.every(
         (exp) =>
-          exp.userId &&
           exp.bankAccountId &&
           exp.title &&
           exp.amount &&
@@ -40,7 +58,15 @@ export default async function handler(
       }
 
       try {
-        const result = await Expense.insertMany(expenses);
+        const decoded = jwt.verify(token, secret) as AuthTokenPayload;
+        const userId = decoded.userId;
+
+        const updatedExpenses = expenses.map((exp) => ({
+          ...exp,
+          userId,
+        }));
+
+        const result = await Expense.insertMany(updatedExpenses);
         return res
           .status(201)
           .json({ message: "Expenses added successfully", data: result });
@@ -50,34 +76,50 @@ export default async function handler(
     }
 
     case "GET": {
-      const { userId, month, year } = query;
+      const { month, year, bankId = undefined } = query;
 
-      if (!userId || !month || !year) {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res
+          .status(401)
+          .json({ error: "Missing or invalid Authorization header" });
+      }
+
+      const token = authHeader.split(" ")[1];
+      const secret = process.env.JWT_SECRET || "monster123";
+
+      if (!secret) {
+        return res.status(500).json({ error: "JWT secret is not configured" });
+      }
+
+      if (!month || !year) {
         return res
           .status(400)
           .json({ error: "Missing userId, month, or year in query" });
       }
 
       try {
+        const decoded = jwt.verify(token, secret) as AuthTokenPayload;
+        const userId = decoded.userId;
+
+        const match: any = {
+          userId: new Types.ObjectId(userId as string),
+          month: parseInt(month as string),
+          year: parseInt(year as string),
+        };
+
+        if (bankId) {
+          match.bankAccountId = new Types.ObjectId(bankId as string);
+        }
+
         const expenses = await Expense.aggregate([
           {
-            $match: {
-              userId: new Types.ObjectId(userId as string),
-              month: parseInt(month as string),
-              year: parseInt(year as string),
-            },
-          },
-          {
-            $group: {
-              _id: "$bankAccountId",
-              total: { $sum: "$amount" },
-              expenses: { $push: "$$ROOT" },
-            },
+            $match: match,
           },
           {
             $lookup: {
               from: "bankaccounts",
-              localField: "_id",
+              localField: "bankAccountId",
               foreignField: "_id",
               as: "bank",
             },
@@ -86,30 +128,31 @@ export default async function handler(
             $unwind: "$bank",
           },
           {
-            $project: {
+            $addFields: {
               bankName: "$bank.name",
-              bankAccountId: "$_id",
-              total: 1,
-              expenses: 1,
             },
           },
-          // Add this stage to calculate the overall total of all banks
+          {
+            $project: {
+              bank: 0,
+            },
+          },
           {
             $group: {
               _id: null,
-              banks: { $push: "$$ROOT" },
-              overallTotal: { $sum: "$total" },
+              expenses: { $push: "$$ROOT" },
+              total: { $sum: "$amount" },
             },
           },
           {
             $project: {
-              banks: 1,
-              overallTotal: 1,
+              _id: 0,
+              expenses: 1,
+              total: 1,
             },
           },
         ]);
-
-        return res.status(200).json({ data: expenses });
+        return res.status(200).json(expenses.length > 0 ? expenses[0] : []);
       } catch (error) {
         console.error("Error getting expenses:", error);
         return res.status(500).json({ error: "Failed to get user expenses" });
