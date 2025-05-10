@@ -51,6 +51,10 @@ import {
   Building,
   PlusCircle,
   RouteOff,
+  Check,
+  CheckCircle,
+  Cross,
+  CircleX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatDate } from "@/lib/formatters";
@@ -87,6 +91,38 @@ const Expenses = () => {
   const expenseStore = useExpenseStore();
   const [expenseList, setExpenseList] = useState<any>([]);
   const [expenseTotal, setExpenseTotal] = useState<any>(0);
+
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [editedTitle, setEditedTitle] = useState("");
+
+  const handleSaveTitle = async (expenseId: string) => {
+    try {
+      // await updateExpenseTitle(expenseId, editedTitle); // call your API
+      setEditingExpenseId(null);
+    } catch (err) {
+      console.error("Failed to update title", err);
+    }
+  };
+
+  const handleCancleTitle = () => {
+    setEditingExpenseId(null);
+  };
+
+  const updateExpenseTitle = async (id: string, title: string) => {
+    const res = await fetch(`/api/expenses/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to update title");
+    }
+
+    return await res.json();
+  };
 
   const filteredExpenses = expenses.filter((expense) => {
     const matchesSearch =
@@ -260,12 +296,50 @@ const Expenses = () => {
                     expenseList.map((expense: Expense) => (
                       <TableRow
                         key={expense.id}
-                        className="group neopop-card hover:bg-purple-400"
+                        className="group neopop-card hover:bg-purple-400 hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 transition-all"
                       >
                         <TableCell className="font-medium">
                           {formatDate(expense.date)}
                         </TableCell>
-                        <TableCell>{expense.title}</TableCell>
+                        <TableCell className="flex items-center gap-2">
+                          {editingExpenseId === expense._id ? (
+                            <>
+                              <Input
+                                value={editedTitle}
+                                onChange={(e) => setEditedTitle(e.target.value)}
+                                className="w-2/3 neopop-input"
+                              />
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleCancleTitle(expense._id)}
+                              >
+                                <CircleX className="w-4 h-4 text-red-600 cursor-pointer" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleSaveTitle(expense._id)}
+                              >
+                                <CheckCircle className="w-4 h-4 text-green-600 cursor-pointer" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <span>{expense.title}</span>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => {
+                                  setEditingExpenseId(expense._id);
+                                  setEditedTitle(expense.title);
+                                }}
+                              >
+                                <PenSquare className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 text-black cursor-pointer" />
+                              </Button>
+                            </>
+                          )}
+                        </TableCell>
                         <TableCell>{expense.bankName}</TableCell>
                         <TableCell className="text-left font-medium">
                           {formatCurrency(expense.amount)}
