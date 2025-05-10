@@ -55,6 +55,7 @@ import {
   CheckCircle,
   Cross,
   CircleX,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatDate } from "@/lib/formatters";
@@ -77,9 +78,21 @@ const categoryIcons: Record<string, any> = {
   entertainment: PartyPopper,
 };
 
+const availableTags = [
+  { id: "essential", name: "Essential", color: "bg-emerald-500" },
+  { id: "recurring", name: "Recurring", color: "bg-blue-500" },
+  { id: "discretionary", name: "Discretionary", color: "bg-amber-500" },
+  { id: "emergency", name: "Emergency", color: "bg-red-500" },
+  { id: "savings", name: "Savings", color: "bg-purple-500" },
+  { id: "business", name: "Business", color: "bg-indigo-500" },
+  { id: "tax-deductible", name: "Tax Deductible", color: "bg-teal-500" },
+  { id: "untagged", name: "Untagged", color: "bg-gray-400" },
+];
+
 const Expenses = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBank, setSelectedBank] = useState<string>("");
+  const [selectedTag, setSelectedTag] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>(
     (new Date().getMonth() + 1).toString()
   );
@@ -94,6 +107,21 @@ const Expenses = () => {
 
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [editedTitle, setEditedTitle] = useState("");
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+
+  // Add tags to expenses
+  useEffect(() => {
+    if (expenseList?.length > 0) {
+      const taggedExpenses = expenseList.map((expense: Expense) => ({
+        ...expense,
+        // Assign random tag or use existing one
+        tag:
+          expense.tag ||
+          availableTags[Math.floor(Math.random() * availableTags.length)].id,
+      }));
+      setExpenseList(taggedExpenses);
+    }
+  }, [expenseStore.expenses]);
 
   const handleSaveTitle = async (expenseId: string) => {
     try {
@@ -106,6 +134,20 @@ const Expenses = () => {
 
   const handleCancleTitle = () => {
     setEditingExpenseId(null);
+  };
+
+  const handleTagChange = (expenseId: string, tagId: string) => {
+    const updatedExpenses = expenseList.map((expense: Expense) => {
+      if (expense._id === expenseId) {
+        return { ...expense, tag: tagId };
+      }
+      return expense;
+    });
+    setExpenseList(updatedExpenses);
+    setEditingTagId(null);
+
+    // Here you would update the tag in your backend
+    // updateExpenseTag(expenseId, tagId);
   };
 
   const updateExpenseTitle = async (id: string, title: string) => {
@@ -122,6 +164,11 @@ const Expenses = () => {
     }
 
     return await res.json();
+  };
+
+  const updateExpenseTag = async (id: string, tagId: string) => {
+    // Implementation would be similar to updateExpenseTitle
+    console.log("Updating tag", id, tagId);
   };
 
   const filteredExpenses = expenses.filter((expense) => {
@@ -152,6 +199,13 @@ const Expenses = () => {
   const getCategoryIcon = (category: string) => {
     const Icon = categoryIcons[category.toLowerCase()] || ShoppingBag;
     return <Icon className="h-4 w-4" />;
+  };
+
+  const getTagInfo = (tagId: string) => {
+    return (
+      availableTags.find((tag) => tag.id === tagId) ||
+      availableTags[availableTags.length - 1]
+    );
   };
 
   const getBanksData = async () => {
@@ -261,6 +315,27 @@ const Expenses = () => {
               </SelectContent>
             </Select>
 
+            <Select
+              value={selectedTag}
+              onValueChange={(value) => setSelectedTag(value)}
+            >
+              <SelectTrigger className="w-[140px] neopop-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="border-2 border-black">
+                {availableTags.map((tag) => (
+                  <SelectItem key={tag.id} value={tag.id}>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`h-3 w-3 rounded-full ${tag.color}`}
+                      ></div>
+                      <span>{tag.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Button
               className="neopop-btn cursor-pointer"
               onClick={resetFilters}
@@ -282,6 +357,7 @@ const Expenses = () => {
                     <TableHead className="text-left">Amount</TableHead>
                     <TableHead className="w-[50px]">Month</TableHead>
                     <TableHead className="w-[50px]">Year</TableHead>
+                    <TableHead className="w-[50px]">Tag</TableHead>
                     <TableHead className="w-[50px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -349,6 +425,51 @@ const Expenses = () => {
                         </TableCell>
                         <TableCell className="text-left font-medium">
                           {expense.year}
+                        </TableCell>
+                        <TableCell>
+                          {editingTagId === expense._id ? (
+                            <Select
+                              defaultValue={expense.tag || "untagged"}
+                              onValueChange={(value) =>
+                                handleTagChange(expense._id, value)
+                              }
+                              onOpenChange={(open) => {
+                                if (!open) setEditingTagId(null);
+                              }}
+                            >
+                              <SelectTrigger className="w-[140px] neopop-select">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="border-2 border-black">
+                                {availableTags.map((tag) => (
+                                  <SelectItem key={tag.id} value={tag.id}>
+                                    <div className="flex items-center gap-2">
+                                      <div
+                                        className={`h-3 w-3 rounded-full ${tag.color}`}
+                                      ></div>
+                                      <span>{tag.name}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Badge
+                              className={`${
+                                getTagInfo(expense.tag).color
+                              } text-white hover:${
+                                getTagInfo(expense.tag).color
+                              } py-1 cursor-pointer border-2 w-full font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all`}
+                              onClick={() => setEditingTagId(expense._id)}
+                            >
+                              <div className="flex w-fit items-center gap-1">
+                                <Tag className="h-3 w-3" />
+                                <span className="w-fit">
+                                  {getTagInfo(expense.tag).name}
+                                </span>
+                              </div>
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
