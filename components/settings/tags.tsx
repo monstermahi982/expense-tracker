@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +30,8 @@ import {
 } from "../ui/table";
 import { Badge } from "../ui/badge";
 import { availableTags } from "@/pages/expenses";
+import { useTagStore } from "@/store/tagStore";
+import { addTag } from "@/server/tag";
 
 const defaultTags = [
   { id: "essential", name: "Essential", color: "bg-emerald-500" },
@@ -42,33 +44,41 @@ const defaultTags = [
   { id: "untagged", name: "Untagged", color: "bg-emerald-500" },
 ];
 
+export interface Tag {
+  _id: string;
+  name: string;
+  color: string;
+  userId?: string;
+  tagType: string;
+}
+
 const TagsComponent = ({}: any) => {
   const [tags, setTags] = useState(defaultTags);
-  const [newTag, setNewTag] = useState({ name: "", color: "#9333ea" });
+  const [newTag, setNewTag] = useState({ name: "", color: "" });
   const [selectedTag, setSelectedTag] = useState<string>("");
   const [editingTagId, setEditingTagId] = useState(null);
   const [deleteTagId, setDeleteTagId] = useState(null);
   const [color, setColor] = useState("#9333ea");
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [tagList, setTagList] = useState([]);
+  const tagStore = useTagStore();
 
   // Tag functions
-  const addNewTag = () => {
+  const addNewTag = async () => {
     if (newTag.name.trim() === "") return;
 
-    const tagId = newTag.name.toLowerCase().replace(/\s+/g, "-");
-    const newTagObj = {
-      id: tagId,
+    const payload = {
       name: newTag.name,
-      color: newTag.color,
+      color: selectedTag,
     };
-
-    setTags([...tags, newTagObj]);
-    setNewTag({ name: "", color: "#9333ea" });
+    await addTag(payload);
+    setNewTag({ name: "", color: "" });
+    await getTagList();
   };
 
   const updateTag = (id, field, value) => {
     const updatedTags = tags.map((tag) => {
-      if (tag.id === id) {
+      if (tag._id === id) {
         return { ...tag, [field]: value };
       }
       return tag;
@@ -78,28 +88,40 @@ const TagsComponent = ({}: any) => {
 
   const startEditTag = (id) => {
     setEditingTagId(id);
-    const tagToEdit = tags.find((tag) => tag.id === id);
+    const tagToEdit = tags.find((tag) => tag._id === id);
     if (tagToEdit) {
       setColor(tagToEdit.color);
     }
   };
 
   const saveTagEdit = () => {
+    const findTag = tagList.find((tg: Tag) => tg._id === editingTagId);
+    console.log("asdasd -asd asds ", findTag);
+
     setEditingTagId(null);
     setShowColorPicker(false);
   };
 
   const deleteTag = (id) => {
-    setTags(tags.filter((tag) => tag.id !== id));
+    setTags(tags.filter((tag) => tag._id !== id));
     setDeleteTagId(null);
   };
 
   const getTagInfo = (tagId: string) => {
     return (
-      availableTags.find((tag) => tag.id === tagId) ||
+      availableTags.find((tag) => tag._id === tagId) ||
       availableTags[availableTags.length - 1]
     );
   };
+
+  const getTagList = async () => {
+    await tagStore.getTags();
+    setTagList(useTagStore.getState().tagList);
+  };
+
+  useEffect(() => {
+    getTagList();
+  }, []);
 
   return (
     <>
@@ -131,7 +153,7 @@ const TagsComponent = ({}: any) => {
                   </SelectTrigger>
                   <SelectContent className="border-2 border-black">
                     {availableTags.map((tag) => (
-                      <SelectItem key={tag.id} value={tag.id}>
+                      <SelectItem key={tag.id} value={tag.color}>
                         <div className="flex items-center gap-2">
                           <div
                             className={`h-3 w-3 rounded-full ${tag.color}`}
@@ -166,36 +188,38 @@ const TagsComponent = ({}: any) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tags.map((tag) => (
+                {tagList.map((tag: Tag) => (
                   <TableRow
-                    key={tag.id}
+                    key={tag._id}
                     className="border-b border-gray-200 hover:bg-purple-50"
                   >
                     <TableCell>
-                      {editingTagId === tag.id ? (
+                      {editingTagId === tag._id ? (
                         <Input
                           value={tag.name}
                           onChange={(e) =>
-                            updateTag(tag.id, "name", e.target.value)
+                            updateTag(tag._id, "name", e.target.value)
                           }
                           className="neopop-input"
                         />
                       ) : (
                         <div className="flex items-center space-x-2">
-                          <Badge
-                            className={`${tag.color} text-white hover:${tag.color} py-1 cursor-pointer border-2 w-full font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all`}
-                          >
-                            {tag.name}
-                          </Badge>
+                          {tag.color !== "" && (
+                            <Badge
+                              className={`${tag.color} text-black hover:${tag.color} py-1 cursor-pointer border-2 w-full font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all`}
+                            >
+                              {tag.name}
+                            </Badge>
+                          )}
                         </div>
                       )}
                     </TableCell>
                     <TableCell>
-                      {editingTagId === tag.id ? (
+                      {editingTagId === tag._id ? (
                         <Select
-                          value={tag.id}
+                          value={tag._id}
                           onValueChange={(value) => {
-                            updateTag(tag.id, "tag", value);
+                            updateTag(tag._id, "tag", value);
                             setEditingTagId(null);
                           }}
                         >
@@ -221,13 +245,13 @@ const TagsComponent = ({}: any) => {
                       ) : (
                         <div
                           className={`neopop-card w-20 h-10 rounded-md cursor-pointer ${tag.color}`}
-                          onClick={() => setEditingTagId(tag.id)}
+                          onClick={() => setEditingTagId(tag._id)}
                         ></div>
                       )}
                     </TableCell>
 
                     <TableCell className="text-right">
-                      {editingTagId === tag.id ? (
+                      {editingTagId === tag._id ? (
                         <Button
                           onClick={saveTagEdit}
                           size="sm"
@@ -237,7 +261,7 @@ const TagsComponent = ({}: any) => {
                         </Button>
                       ) : (
                         <Button
-                          onClick={() => startEditTag(tag.id)}
+                          onClick={() => startEditTag(tag._id)}
                           size="sm"
                           className="neopop-card bg-blue-500 mr-2 text-white"
                         >
@@ -250,7 +274,7 @@ const TagsComponent = ({}: any) => {
                           <Button
                             size="sm"
                             className="neopop-card bg-red-500 text-white "
-                            disabled={tag.id === "untagged"} // Prevent deletion of default untagged
+                            disabled={tag._id === "untagged"} // Prevent deletion of default untagged
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -269,7 +293,7 @@ const TagsComponent = ({}: any) => {
                             </AlertDialogCancel>
                             <AlertDialogAction
                               className="neopop-card bg-red-500 text-white "
-                              onClick={() => deleteTag(tag.id)}
+                              onClick={() => deleteTag(tag._id)}
                             >
                               Delete
                             </AlertDialogAction>
