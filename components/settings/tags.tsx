@@ -31,18 +31,7 @@ import {
 import { Badge } from "../ui/badge";
 import { availableTags } from "@/pages/expenses";
 import { useTagStore } from "@/store/tagStore";
-import { addTag } from "@/server/tag";
-
-const defaultTags = [
-  { id: "essential", name: "Essential", color: "bg-emerald-500" },
-  { id: "recurring", name: "Recurring", color: "bg-red-500" },
-  { id: "discretionary", name: "Discretionary", color: "bg-emerald-500" },
-  { id: "emergency", name: "Emergency", color: "bg-emerald-500" },
-  { id: "savings", name: "Savings", color: "bg-purple-500" },
-  { id: "business", name: "Business", color: "bg-emerald-500" },
-  { id: "tax-deductible", name: "Tax Deductible", color: "bg-emerald-500" },
-  { id: "untagged", name: "Untagged", color: "bg-emerald-500" },
-];
+import { addTag, updateTag } from "@/server/tag";
 
 export interface Tag {
   _id: string;
@@ -52,66 +41,48 @@ export interface Tag {
   tagType: string;
 }
 
-const TagsComponent = ({}: any) => {
-  const [tags, setTags] = useState(defaultTags);
+const TagsComponent = () => {
   const [newTag, setNewTag] = useState({ name: "", color: "" });
-  const [selectedTag, setSelectedTag] = useState<string>("");
-  const [editingTagId, setEditingTagId] = useState(null);
-  const [deleteTagId, setDeleteTagId] = useState(null);
-  const [color, setColor] = useState("#9333ea");
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [tagList, setTagList] = useState([]);
+  const [selectedTagColor, setSelectedTagColor] = useState<string>("");
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [deleteTagId, setDeleteTagId] = useState<string | null>(null);
+  const [tagList, setTagList] = useState<Tag[]>([]);
   const tagStore = useTagStore();
 
-  // Tag functions
   const addNewTag = async () => {
-    if (newTag.name.trim() === "") return;
+    if (newTag.name.trim() === "" || selectedTagColor === "") return;
 
     const payload = {
       name: newTag.name,
-      color: selectedTag,
+      color: selectedTagColor,
     };
+
     await addTag(payload);
     setNewTag({ name: "", color: "" });
+    setSelectedTagColor("");
     await getTagList();
   };
 
-  const updateTag = (id, field, value) => {
-    const updatedTags = tags.map((tag) => {
-      if (tag._id === id) {
-        return { ...tag, [field]: value };
-      }
-      return tag;
-    });
-    setTags(updatedTags);
-  };
-
-  const startEditTag = (id) => {
-    setEditingTagId(id);
-    const tagToEdit = tags.find((tag) => tag._id === id);
-    if (tagToEdit) {
-      setColor(tagToEdit.color);
-    }
-  };
-
-  const saveTagEdit = () => {
-    const findTag = tagList.find((tg: Tag) => tg._id === editingTagId);
-    console.log("asdasd -asd asds ", findTag);
-
-    setEditingTagId(null);
-    setShowColorPicker(false);
-  };
-
-  const deleteTag = (id) => {
-    setTags(tags.filter((tag) => tag._id !== id));
-    setDeleteTagId(null);
-  };
-
-  const getTagInfo = (tagId: string) => {
-    return (
-      availableTags.find((tag) => tag._id === tagId) ||
-      availableTags[availableTags.length - 1]
+  const updateTagField = (id: string, field: keyof Tag, value: string) => {
+    const updated = tagList.map((tag) =>
+      tag._id === id ? { ...tag, [field]: value } : tag
     );
+    setTagList(updated);
+  };
+
+  const saveTagEdit = async () => {
+    const tag = tagList.find((tg) => tg._id === editingTagId);
+    if (!tag) return;
+
+    await updateTag(tag._id, { name: tag.name, color: tag.color });
+    setEditingTagId(null);
+    await getTagList();
+  };
+
+  const deleteTag = async (id: string) => {
+    await tagStore.deleteTag(id);
+    setDeleteTagId(null);
+    await getTagList();
   };
 
   const getTagList = async () => {
@@ -133,38 +104,32 @@ const TagsComponent = ({}: any) => {
               Add New Tag
             </h3>
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-grow">
-                <Input
-                  value={newTag.name}
-                  onChange={(e) =>
-                    setNewTag({ ...newTag, name: e.target.value })
-                  }
-                  placeholder="Tag name"
-                  className="neopop-input"
-                />
-              </div>
-              <div className="relative">
-                <Select
-                  value={selectedTag}
-                  onValueChange={(value) => setSelectedTag(value)}
-                >
-                  <SelectTrigger className="w-[140px] neopop-select">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="border-2 border-black">
-                    {availableTags.map((tag) => (
-                      <SelectItem key={tag.id} value={tag.color}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`h-3 w-3 rounded-full ${tag.color}`}
-                          ></div>
-                          <span>{tag.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Input
+                value={newTag.name}
+                onChange={(e) => setNewTag({ ...newTag, name: e.target.value })}
+                placeholder="Tag name"
+                className="neopop-input"
+              />
+              <Select
+                value={selectedTagColor}
+                onValueChange={(value) => setSelectedTagColor(value)}
+              >
+                <SelectTrigger className="w-[140px] neopop-select">
+                  <SelectValue placeholder="Color" />
+                </SelectTrigger>
+                <SelectContent className="border-2 border-black">
+                  {availableTags.map((tag) => (
+                    <SelectItem key={tag.id} value={tag.color}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`h-3 w-3 rounded-full ${tag.color}`}
+                        ></div>
+                        <span>{tag.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button
                 onClick={addNewTag}
                 className="neopop-card bg-purple-600 text-white hover:bg-purple-700 cursor-pointer"
@@ -198,45 +163,35 @@ const TagsComponent = ({}: any) => {
                         <Input
                           value={tag.name}
                           onChange={(e) =>
-                            updateTag(tag._id, "name", e.target.value)
+                            updateTagField(tag._id, "name", e.target.value)
                           }
                           className="neopop-input"
                         />
                       ) : (
-                        <div className="flex items-center space-x-2">
-                          {tag.color !== "" && (
-                            <Badge
-                              className={`${tag.color} text-black hover:${tag.color} py-1 cursor-pointer border-2 w-full font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all`}
-                            >
-                              {tag.name}
-                            </Badge>
-                          )}
-                        </div>
+                        <Badge className={`${tag.color} text-black py-1`}>
+                          {tag.name}
+                        </Badge>
                       )}
                     </TableCell>
                     <TableCell>
                       {editingTagId === tag._id ? (
                         <Select
-                          value={tag._id}
-                          onValueChange={(value) => {
-                            updateTag(tag._id, "tag", value);
-                            setEditingTagId(null);
-                          }}
+                          value={tag.color}
+                          onValueChange={(value) =>
+                            updateTagField(tag._id, "color", value)
+                          }
                         >
-                          <SelectTrigger className="w-[160px] border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)]">
-                            <SelectValue placeholder="Select tag" />
+                          <SelectTrigger className="w-[160px] border-2 border-black">
+                            <SelectValue placeholder="Select tag color" />
                           </SelectTrigger>
                           <SelectContent className="border-2 border-black">
-                            {tags.map((tagOption) => (
-                              <SelectItem
-                                key={tagOption.id}
-                                value={tagOption.id}
-                              >
+                            {availableTags.map((opt) => (
+                              <SelectItem key={opt.id} value={opt.color}>
                                 <div className="flex items-center gap-2">
                                   <div
-                                    className={`h-3 w-3 rounded-full ${tagOption.color}`}
+                                    className={`h-3 w-3 rounded-full ${opt.color}`}
                                   ></div>
-                                  <span>{tagOption.name}</span>
+                                  <span>{opt.name}</span>
                                 </div>
                               </SelectItem>
                             ))}
@@ -249,7 +204,6 @@ const TagsComponent = ({}: any) => {
                         ></div>
                       )}
                     </TableCell>
-
                     <TableCell className="text-right">
                       {editingTagId === tag._id ? (
                         <Button
@@ -261,25 +215,24 @@ const TagsComponent = ({}: any) => {
                         </Button>
                       ) : (
                         <Button
-                          onClick={() => startEditTag(tag._id)}
+                          onClick={() => setEditingTagId(tag._id)}
                           size="sm"
                           className="neopop-card bg-blue-500 mr-2 text-white"
                         >
                           <PenSquare className="h-4 w-4" />
                         </Button>
                       )}
-
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
                             size="sm"
-                            className="neopop-card bg-red-500 text-white "
-                            disabled={tag._id === "untagged"} // Prevent deletion of default untagged
+                            className="neopop-card bg-red-500 text-white"
+                            disabled={tag._id === "untagged"}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent className=" shadow-[8px_8px_0px_0px_rgba(0,0,0,0.8)]">
+                        <AlertDialogContent className="shadow-[8px_8px_0px_0px_rgba(0,0,0,0.8)]">
                           <AlertDialogHeader>
                             <AlertDialogTitle>Delete Tag</AlertDialogTitle>
                             <AlertDialogDescription>
@@ -292,7 +245,7 @@ const TagsComponent = ({}: any) => {
                               Cancel
                             </AlertDialogCancel>
                             <AlertDialogAction
-                              className="neopop-card bg-red-500 text-white "
+                              className="neopop-card bg-red-500 text-white"
                               onClick={() => deleteTag(tag._id)}
                             >
                               Delete

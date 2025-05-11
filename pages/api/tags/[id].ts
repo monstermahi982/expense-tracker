@@ -7,14 +7,12 @@ export default async function handler(
   res: NextApiResponse
 ) {
   await connectDB();
-
+  const {
+    query: { id },
+    method,
+  } = req;
   switch (req.method) {
     case "GET":
-      const {
-        query: { id },
-        method,
-      } = req;
-
       if (method !== "GET") {
         res.setHeader("Allow", ["GET"]);
         return res.status(405).end(`Method ${method} Not Allowed`);
@@ -26,11 +24,25 @@ export default async function handler(
 
         return res.status(200).json(tag);
       } catch (error) {
-        return res.status(500).json({ error: "Failed to get tag account" });
+        return res.status(500).json({ error: "Failed to get tag" });
       }
 
     case "PUT":
-      const updated = await Tag.findByIdAndUpdate(id, req.body, { new: true });
-      return res.status(200).json(updated);
+      try {
+        const updated = await Tag.findByIdAndUpdate(id, req.body, {
+          new: true,
+        });
+        return res.status(200).json(updated);
+      } catch (er) {
+        return res.status(500).json({ error: "Failed to update tag" });
+      }
+
+    case "DELETE":
+      try {
+        const deleteTag = await Tag.findByIdAndDelete(id);
+        return res.status(200).json(deleteTag);
+      } catch (er) {
+        return res.status(500).json({ error: "Failed to delete tag" });
+      }
   }
 }

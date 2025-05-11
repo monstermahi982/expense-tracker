@@ -18,6 +18,11 @@ export const updateTag = async (id: string, data: Tag): Promise<Tag> => {
   return res.data;
 };
 
+export const deleteTag = async (id: string): Promise<Tag> => {
+  const res = await axios.delete("/tags/" + id);
+  return res.data;
+};
+
 export const getTagList = async (): Promise<Tag> => {
   const res = await axios.get("/tags");
   return res.data;
