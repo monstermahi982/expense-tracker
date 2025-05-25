@@ -8,6 +8,7 @@ export interface IExpense extends Document {
   date: Date;
   month: number;
   year: number;
+  tag: Types.ObjectId,
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +20,11 @@ const ExpenseSchema = new Schema<IExpense>(
       type: Schema.Types.ObjectId,
       ref: "BankAccount",
       required: true,
+    },
+    tag: {
+      type: Schema.Types.ObjectId,
+      ref: "Tag",
+      required: false,
     },
     title: { type: String, required: true },
     amount: { type: Number, required: true },

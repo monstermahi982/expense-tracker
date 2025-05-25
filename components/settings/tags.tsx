@@ -29,7 +29,6 @@ import {
   TableRow,
 } from "../ui/table";
 import { Badge } from "../ui/badge";
-import { availableTags } from "@/pages/expenses";
 import { useTagStore } from "@/store/tagStore";
 import { addTag, updateTag } from "@/server/tag";
 
@@ -40,6 +39,17 @@ export interface Tag {
   userId?: string;
   tagType: string;
 }
+
+export const availableTags = [
+  { id: "Teal", name: "Teal", color: "bg-emerald-500" },
+  { id: "Blue", name: "Blue", color: "bg-blue-500" },
+  { id: "Amber", name: "Amber", color: "bg-amber-500" },
+  { id: "Red", name: "Red", color: "bg-red-500" },
+  { id: "Purple", name: "Purple", color: "bg-purple-500" },
+  { id: "Indigo", name: "Indigo", color: "bg-indigo-500" },
+  { id: "Teal 2", name: "Teal 2", color: "bg-teal-500" },
+  { id: "Gray", name: "Gray", color: "bg-gray-400" },
+];
 
 const TagsComponent = () => {
   const [newTag, setNewTag] = useState({ name: "", color: "" });

@@ -66,6 +66,15 @@ import { Expense } from "@/interfaces/expense";
 import { MONTHS } from "@/utils/constant";
 import { useBankStore } from "@/store/bankStore";
 import { Bank } from "@/server/bank";
+import { useTagStore } from "@/store/tagStore";
+
+export interface Tag {
+  _id: string;
+  name: string;
+  color: string;
+  userId?: string;
+  tagType?: string;
+}
 
 const categoryIcons: Record<string, any> = {
   shopping: ShoppingBag,
@@ -77,17 +86,6 @@ const categoryIcons: Record<string, any> = {
   travel: Plane,
   entertainment: PartyPopper,
 };
-
-export const availableTags = [
-  { id: "essential", name: "Essential", color: "bg-emerald-500" },
-  { id: "recurring", name: "Recurring", color: "bg-blue-500" },
-  { id: "discretionary", name: "Discretionary", color: "bg-amber-500" },
-  { id: "emergency", name: "Emergency", color: "bg-red-500" },
-  { id: "savings", name: "Savings", color: "bg-purple-500" },
-  { id: "business", name: "Business", color: "bg-indigo-500" },
-  { id: "tax-deductible", name: "Tax Deductible", color: "bg-teal-500" },
-  { id: "untagged", name: "Untagged", color: "bg-gray-400" },
-];
 
 const Expenses = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -108,6 +106,8 @@ const Expenses = () => {
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [tagList, setTagList] = useState<any[]>([]);
+  const tagStore = useTagStore();
 
   // Add tags to expenses
   useEffect(() => {
@@ -117,7 +117,7 @@ const Expenses = () => {
         // Assign random tag or use existing one
         tag:
           expense.tag ||
-          availableTags[Math.floor(Math.random() * availableTags.length)].id,
+          tagList[Math.floor(Math.random() * tagList.length)]._id,
       }));
       setExpenseList(taggedExpenses);
     }
@@ -202,9 +202,15 @@ const Expenses = () => {
   };
 
   const getTagInfo = (tagId: string) => {
-    return (
-      availableTags.find((tag) => tag.id === tagId) ||
-      availableTags[availableTags.length - 1]
+    return tagList.find((tag: Tag) => tag._id === tagId) || tagList[0];
+  };
+
+  const updateTag = async (expenseId: string, tagId: string) => {
+    await expenseStore.addExpenseTag(expenseId, { tag: tagId });
+    await getExpenseData(
+      Number(selectedMonth),
+      Number(selectedYear),
+      selectedBank
     );
   };
 
@@ -221,12 +227,23 @@ const Expenses = () => {
     }
   }, []);
 
+  const getTagList = async () => {
+    await tagStore.getTags();
+    setTagList(useTagStore.getState().tagList);
+  };
+
+  useEffect(() => {
+    getTagList();
+  }, []);
+
   const getExpenseData = async (
     month: number,
     year: number,
-    bankId: string | undefined = undefined
+    bankId: string | undefined = undefined,
+    tag: string | undefined = undefined
   ) => {
-    await expenseStore.getExpenses({ month: month, year: year, bankId });
+    const payload: any = { month: month, year: year, bankId, tag };
+    await expenseStore.getExpenses(payload);
     if (useExpenseStore.getState().expenses?.expenses?.length > 0) {
       setExpenseList(useExpenseStore.getState().expenses?.expenses);
       setExpenseTotal(useExpenseStore.getState().expenses?.total);
@@ -246,6 +263,15 @@ const Expenses = () => {
   useEffect(() => {
     getExpenseData(Number(selectedMonth), Number(selectedYear), selectedBank);
   }, [selectedBank || selectedMonth || selectedYear]);
+
+  useEffect(() => {
+    getExpenseData(
+      Number(selectedMonth),
+      Number(selectedYear),
+      selectedBank,
+      selectedTag
+    );
+  }, [selectedTag]);
 
   useEffect(() => {
     getExpenseData(new Date().getMonth() + 1, new Date().getFullYear());
@@ -314,7 +340,6 @@ const Expenses = () => {
                 ))}
               </SelectContent>
             </Select>
-
             <Select
               value={selectedTag}
               onValueChange={(value) => setSelectedTag(value)}
@@ -323,8 +348,8 @@ const Expenses = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="border-2 border-black">
-                {availableTags.map((tag) => (
-                  <SelectItem key={tag.id} value={tag.id}>
+                {tagList.map((tag) => (
+                  <SelectItem key={tag._id} value={tag._id}>
                     <div className="flex items-center gap-2">
                       <div
                         className={`h-3 w-3 rounded-full ${tag.color}`}
@@ -371,7 +396,7 @@ const Expenses = () => {
                   ) : (
                     expenseList.map((expense: Expense) => (
                       <TableRow
-                        key={expense.id}
+                        key={expense._id}
                         className="group neopop-card hover:bg-purple-400 hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 transition-all"
                       >
                         <TableCell className="font-medium">
@@ -431,7 +456,7 @@ const Expenses = () => {
                             <Select
                               defaultValue={expense.tag || "untagged"}
                               onValueChange={(value) =>
-                                handleTagChange(expense._id, value)
+                                updateTag(expense._id, value)
                               }
                               onOpenChange={(open) => {
                                 if (!open) setEditingTagId(null);
@@ -441,8 +466,8 @@ const Expenses = () => {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="border-2 border-black">
-                                {availableTags.map((tag) => (
-                                  <SelectItem key={tag.id} value={tag.id}>
+                                {tagList.map((tag: Tag) => (
+                                  <SelectItem key={tag._id} value={tag._id}>
                                     <div className="flex items-center gap-2">
                                       <div
                                         className={`h-3 w-3 rounded-full ${tag.color}`}

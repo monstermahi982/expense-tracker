@@ -64,6 +64,7 @@ export default async function handler(
         const updatedExpenses = expenses.map((exp) => ({
           ...exp,
           userId,
+          tag: "6831f19229e4b40e92dc89ac",
         }));
 
         const result = await Expense.insertMany(updatedExpenses);
@@ -76,7 +77,7 @@ export default async function handler(
     }
 
     case "GET": {
-      const { month, year, bankId = undefined } = query;
+      const { month, year, bankId = undefined, tag = undefined } = query;
 
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -110,6 +111,10 @@ export default async function handler(
 
         if (bankId) {
           match.bankAccountId = new Types.ObjectId(bankId as string);
+        }
+
+        if (tag) {
+          match.tag = new Types.ObjectId(tag as string);
         }
 
         const expenses = await Expense.aggregate([

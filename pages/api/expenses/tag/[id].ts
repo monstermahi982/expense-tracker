@@ -11,13 +11,20 @@ export default async function handler(
   const {
     method,
     query: { id },
+    body,
   } = req;
 
   switch (method) {
-    case "DELETE":
+    case "PATCH":
       try {
-        await Expense.findByIdAndDelete(id);
-        return res.status(200).json({ message: "Expense deleted" });
+        await Expense.findByIdAndUpdate(
+          id,
+          {
+            ...body,
+          },
+          { new: true }
+        );
+        return res.status(200).json({ message: "Added Tag" });
       } catch (error) {
         return res.status(500).json({ error: "Failed to delete expense" });
       }
