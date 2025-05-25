@@ -28,6 +28,12 @@ export function MainNav() {
       active: pathname === "/expenses",
     },
     {
+      href: "/analytics",
+      label: "Analytics",
+      icon: Receipt,
+      active: pathname === "/analytics",
+    },
+    {
       href: "/settings",
       label: "Settings",
       icon: Settings,
