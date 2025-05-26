@@ -131,7 +131,7 @@ export default function AccountDetailPage() {
               <CardTitle className="text-base font-medium">
                 Current Balance
               </CardTitle>
-              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full -20 text-primary flex items-center justify-center">
                 <Wallet className="h-5 w-5" />
               </div>
             </CardHeader>

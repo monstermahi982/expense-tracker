@@ -43,7 +43,7 @@ export function AddBankDialog({ open, onOpenChange }: AddBankDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="flex items-center justify-center mb-6">
-            <div className="h-20 w-20 bg-primary/20 rounded-full flex items-center justify-center">
+            <div className="h-20 w-20 bg-primary-20 rounded-full flex items-center justify-center">
               <Building className="h-10 w-10" />
             </div>
           </div>

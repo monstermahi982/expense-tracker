@@ -1,7 +1,6 @@
 // pages/_app.tsx
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { useUserStore } from "@/store/userStore";
@@ -9,6 +8,9 @@ import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/router";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 const publicRoutes = ["/login", "/register"];
 
@@ -25,8 +27,6 @@ export default function App({ Component, pageProps }: AppProps) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-
-    // Check if current route is public
     const isPublicRoute = publicRoutes.includes(router.pathname);
 
     if (!token && !isPublicRoute) {
@@ -39,16 +39,19 @@ export default function App({ Component, pageProps }: AppProps) {
 
     setLoading(false);
   }, [router.pathname]);
+
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <Component {...pageProps} />
-      <Toaster />
-      <ToastContainer />
-    </ThemeProvider>
+    <div className={inter.className}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <Component {...pageProps} />
+        <Toaster />
+        <ToastContainer />
+      </ThemeProvider>
+    </div>
   );
 }

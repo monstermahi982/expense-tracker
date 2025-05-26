@@ -299,7 +299,7 @@ const Expenses = () => {
                 {bankList.map((account) => (
                   <SelectItem key={account._id} value={account._id}>
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-primary/20 flex items-center justify-center">
+                      <div className="h-4 w-4 rounded-full bg-primary-20 flex items-center justify-center">
                         <Building className="h-3 w-3" />
                       </div>
                       <span>{account.name}</span>

@@ -63,7 +63,7 @@ export default function AccountsPage() {
               <CardTitle className="text-base font-medium">
                 Total Balance
               </CardTitle>
-              <div className="h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-primary-20 text-primary flex items-center justify-center">
                 <Wallet className="h-5 w-5" />
               </div>
             </CardHeader>
@@ -124,8 +124,8 @@ export default function AccountsPage() {
                 <div className="absolute top-2 right-2 cursor-pointer">
                   <Trash2 className="h-4 w-4 text-red-400" />
                 </div>
-                <div className="mb-3 rounded-full bg-primary/10 p-2">
-                  <div className="h-6 w-6 bg-primary/20 rounded-full flex items-center justify-center">
+                <div className="mb-3 rounded-full bg-primary-10 p-2">
+                  <div className="h-6 w-6 bg-primary-20 rounded-full flex items-center justify-center">
                     <Building className="h-8 w-8" />
                   </div>
                 </div>

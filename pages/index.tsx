@@ -1,24 +1,27 @@
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
-import { BankAccounts } from "@/components/bank-accounts";
-import { RecentExpenses } from "@/components/recent-expenses";
-import { ExpenseOverview } from "@/components/expense-overview";
-import { SpendingByCategory } from "@/components/spending-by-category";
+import Link from "next/link";
+import { Inter } from "next/font/google";
+import Hero from "@/components/home/Hero";
+import Features from "@/components/home/Features";
+import HowItWorks from "@/components/home/HowItWorks";
+import Stats from "@/components/home/Stats";
+import Testimonials from "@/components/home/Testimonials";
+import CTA from "@/components/home/CTA";
+import Header from "@/components/shared/Header";
+import Footer from "@/components/shared/Footer";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   return (
-    <DashboardLayout>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <ExpenseOverview />
-        <SpendingByCategory />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-5">
-          <BankAccounts />
-        </div>
-        <div className="lg:col-span-7">
-          <RecentExpenses />
-        </div>
-      </div>
-    </DashboardLayout>
+    <main className="min-h-screen bg-background">
+      <Header />
+      <Hero />
+      <Features />
+      <HowItWorks />
+      <Stats />
+      <Testimonials />
+      <CTA />
+      <Footer />
+    </main>
   );
 }
