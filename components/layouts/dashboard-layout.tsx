@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from 'react';
-import { ModeToggle } from '@/components/mode-toggle';
-import { MainNav } from '@/components/main-nav';
-import { UserNav } from '@/components/user-nav';
-import { AddExpenseButton } from '@/components/add-expense-button';
-import { AddExpenseDialog } from '@/components/add-expense-dialog';
+import { useState } from "react";
+import { ModeToggle } from "@/components/mode-toggle";
+import { MainNav } from "@/components/main-nav";
+import { UserNav } from "@/components/user-nav";
+import { AddExpenseButton } from "@/components/add-expense-button";
+import { AddExpenseDialog } from "@/components/add-expense-dialog";
+import Footer from "../shared/Footer";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -26,13 +27,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
       </header>
-      <main className="flex-1 py-6 mx-2 md:mx-10">
-        {children}
-      </main>
-      <AddExpenseDialog 
-        open={isExpenseDialogOpen} 
-        onOpenChange={setIsExpenseDialogOpen} 
+      <main className="flex-1 py-6 mx-2 md:mx-10">{children}</main>
+      <AddExpenseDialog
+        open={isExpenseDialogOpen}
+        onOpenChange={setIsExpenseDialogOpen}
       />
+      <Footer />
     </div>
   );
 }
