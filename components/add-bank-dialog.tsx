@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Building } from "lucide-react";
+import { useBankStore } from "@/store/bankStore";
 
 interface AddBankDialogProps {
   open: boolean;
@@ -22,11 +23,20 @@ interface AddBankDialogProps {
 export function AddBankDialog({ open, onOpenChange }: AddBankDialogProps) {
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
+  const bankStore = useBankStore();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would normally save the bank data
-    toast.success("Bank account added successfully");
+    const response: any = await bankStore.addBank({
+      name: bankName,
+      accountNumber,
+    });
+    if (response?._id) {
+      toast.success("Bank account added successfully");
+      await bankStore.getBanks();
+    } else {
+      toast.error("Failed to add bank account");
+    }
     setBankName("");
     setAccountNumber("");
     onOpenChange(false);
@@ -36,7 +46,9 @@ export function AddBankDialog({ open, onOpenChange }: AddBankDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] neopop-modal">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Add New Bank Account</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            Add New Bank Account
+          </DialogTitle>
           <DialogDescription>
             Enter your bank account details below.
           </DialogDescription>
@@ -49,7 +61,10 @@ export function AddBankDialog({ open, onOpenChange }: AddBankDialogProps) {
           </div>
           <div className="space-y-4">
             <div>
-              <label htmlFor="bankName" className="block text-sm font-medium mb-2">
+              <label
+                htmlFor="bankName"
+                className="block text-sm font-medium mb-2"
+              >
                 Bank Name
               </label>
               <Input
@@ -61,7 +76,10 @@ export function AddBankDialog({ open, onOpenChange }: AddBankDialogProps) {
               />
             </div>
             <div>
-              <label htmlFor="accountNumber" className="block text-sm font-medium mb-2">
+              <label
+                htmlFor="accountNumber"
+                className="block text-sm font-medium mb-2"
+              >
                 Account Number
               </label>
               <Input

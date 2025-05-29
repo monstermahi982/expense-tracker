@@ -14,10 +14,10 @@ export const useBankStore = create<AuthState>((set) => ({
   isLoading: false,
   error: null,
 
-  addBank: async (data) => {
+  addBank: async (data: Bank): Promise<any> => {
     set({ isLoading: true, error: null });
     try {
-      const bank = await addBank(data);
+      return addBank(data);
     } catch (err: any) {
       set({ error: err.response?.data?.message || "Bank Create failed" });
     } finally {
@@ -28,13 +28,12 @@ export const useBankStore = create<AuthState>((set) => ({
   getBanks: async () => {
     set({ isLoading: true });
     try {
-      const banks = await getBankList();      
+      const banks = await getBankList();
       set({ bankList: banks });
     } catch (err: any) {
       set({ error: err.response?.data?.message || "Failed to load users" });
     } finally {
       set({ isLoading: false });
     }
-  }
-
+  },
 }));

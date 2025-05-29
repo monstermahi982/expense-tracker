@@ -12,7 +12,7 @@ import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const publicRoutes = ["/login", "/register"];
+const publicRoutes = ["/"];
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -30,9 +30,9 @@ export default function App({ Component, pageProps }: AppProps) {
     const isPublicRoute = publicRoutes.includes(router.pathname);
 
     if (!token && !isPublicRoute) {
-      router.replace("/login");
-    } else if (token && isPublicRoute) {
       router.replace("/");
+    } else if (token && isPublicRoute) {
+      router.replace("/dashboard");
     } else {
       setIsAuthenticated(!!token);
     }

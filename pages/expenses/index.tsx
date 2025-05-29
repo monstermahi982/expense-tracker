@@ -481,9 +481,9 @@ const Expenses = () => {
                           ) : (
                             <Badge
                               className={`${
-                                getTagInfo(expense.tag).color
+                                getTagInfo(expense?.tag).color
                               } text-white hover:${
-                                getTagInfo(expense.tag).color
+                                getTagInfo(expense?.tag).color
                               } py-1 cursor-pointer border-2 w-full font-medium shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-none transition-all`}
                               onClick={() => setEditingTagId(expense._id)}
                             >

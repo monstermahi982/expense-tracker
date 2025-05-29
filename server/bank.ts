@@ -1,7 +1,7 @@
 import axios from "@/lib/axios";
 
 export interface Bank {
-  id: string;
+  id?: string;
   name: string;
   accountNumber?: string
 }

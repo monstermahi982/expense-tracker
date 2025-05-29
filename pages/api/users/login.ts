@@ -10,7 +10,7 @@ type LoginRequestBody = {
 };
 
 type LoginResponse =
-  | { message: string; token: string }
+  | { message: string; token: string; data: { name: string; email: string } }
   | { error: string }
   | { error: string; err: any };
 
@@ -46,7 +46,13 @@ export default async function handler(
       process.env.JWT_SECRET || ("monster123" as string)
     );
 
-    return res.status(200).json({ message: "Login successful", token });
+    return res
+      .status(200)
+      .json({
+        message: "Login successful",
+        token,
+        data: { name: user.name, email: user.email },
+      });
   } catch (err) {
     console.error("Login error:", err);
     return res.status(500).json({ error: "Server error", err });

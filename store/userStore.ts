@@ -28,15 +28,16 @@ export const useUserStore = create<AuthState>((set) => ({
   isLoading: false,
   error: null,
 
-  login: async (data) => {
+  login: async (data): Promise<any> => {
     set({ isLoading: true, error: null });
     try {
       const user = await loginUser(data);
-      set({ currentUser: user, token: user.token || null });
+      set({ currentUser: user.data, token: user.token || null });
 
       // Store in localStorage
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", user.token || "");
+      return user;
     } catch (err: any) {
       set({ error: err.response?.data?.message || "Login failed" });
     } finally {
