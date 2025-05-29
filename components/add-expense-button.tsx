@@ -1,5 +1,5 @@
 "use client";
-import '@/styles/globals.css'
+// import '@/styles/globals.css'
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";

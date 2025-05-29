@@ -2,6 +2,7 @@ import axios from "@/lib/axios";
 
 export interface Bank {
   id?: string;
+  _id?: string;
   name: string;
   accountNumber?: string
 }

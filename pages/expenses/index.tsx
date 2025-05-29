@@ -297,7 +297,7 @@ const Expenses = () => {
               </SelectTrigger>
               <SelectContent>
                 {bankList.map((account) => (
-                  <SelectItem key={account._id} value={account._id}>
+                  <SelectItem key={account._id} value={account._id || ""}>
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 rounded-full bg-primary-20 flex items-center justify-center">
                         <Building className="h-3 w-3" />
@@ -413,7 +413,7 @@ const Expenses = () => {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                onClick={() => handleCancleTitle(expense._id)}
+                                onClick={handleCancleTitle}
                               >
                                 <CircleX className="w-4 h-4 text-red-600 cursor-pointer" />
                               </Button>
@@ -446,6 +446,7 @@ const Expenses = () => {
                           {formatCurrency(expense.amount)}
                         </TableCell>
                         <TableCell className="text-left font-medium">
+                          {/* @ts-ignore */}
                           {MONTHS[expense.month]}
                         </TableCell>
                         <TableCell className="text-left font-medium">

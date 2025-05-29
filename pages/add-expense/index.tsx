@@ -152,7 +152,7 @@ export default function AddExpensePage() {
                   </SelectTrigger>
                   <SelectContent>
                     {bankList.map((account: Bank, index: number) => (
-                      <SelectItem key={index} value={account._id}>
+                      <SelectItem key={index} value={account._id || ""}>
                         <div className="flex items-center gap-2">
                           <div className="h-4 w-4 rounded-full bg-primary-20 flex items-center justify-center">
                             <Building className="h-3 w-3" />

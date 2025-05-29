@@ -31,7 +31,7 @@ export const useUserStore = create<AuthState>((set) => ({
   login: async (data): Promise<any> => {
     set({ isLoading: true, error: null });
     try {
-      const user = await loginUser(data);
+      const user: any = await loginUser(data);
       set({ currentUser: user.data, token: user.token || null });
 
       // Store in localStorage

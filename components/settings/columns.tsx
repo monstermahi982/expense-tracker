@@ -26,7 +26,7 @@ const ColumnsComponent = () => {
   const [columns, setColumns] = useState(defaultColumns);
 
   // Column functions
-  const toggleColumn = (id) => {
+  const toggleColumn = (id: string) => {
     setColumns(
       columns.map((col) => {
         if (col.id === id && !col.fixed) {
@@ -37,7 +37,7 @@ const ColumnsComponent = () => {
     );
   };
 
-  const toggleColumnEditable = (id) => {
+  const toggleColumnEditable = (id: string) => {
     setColumns(
       columns.map((col) => {
         if (col.id === id && !col.fixed) {

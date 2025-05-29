@@ -21,7 +21,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="mx-2 md:mx-10 flex h-16 items-center justify-between py-4">
           <MainNav />
           <div className="flex items-center gap-4">
-            <AddExpenseButton onClick={() => setIsExpenseDialogOpen(true)} />
+            <AddExpenseButton />
             <ModeToggle />
             <UserNav />
           </div>

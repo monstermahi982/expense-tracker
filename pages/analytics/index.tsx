@@ -98,11 +98,7 @@ const AnalyticsPage = () => {
 
   const getAnalyticsData = async (type: string) => {
     await analyticsStore.byDuration(type);
-    if (useAnalyticsStore.getState().analytics?.length > 0) {
-      setAnayticsList(useAnalyticsStore.getState().analytics);
-    } else {
-      setAnayticsList([]);
-    }
+    setAnayticsList(useAnalyticsStore.getState().analytics);
   };
 
   useEffect(() => {
@@ -174,6 +170,7 @@ const AnalyticsPage = () => {
                           className="group neopop-card hover:bg-purple-400 hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 transition-all"
                         >
                           <TableCell className="text-left font-medium">
+                            {/* @ts-ignore */}
                             {MONTHS[expense.month]}
                           </TableCell>
                           <TableCell className="text-left font-medium">

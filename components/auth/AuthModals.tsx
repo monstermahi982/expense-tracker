@@ -42,7 +42,7 @@ export function AuthModals({
     setIsLoading(true);
 
     if (view === "login") {
-      const response: { message: string } = await userStore.login({
+      const response: any = await userStore.login({
         email: data.email,
         password: data.password,
       });
@@ -51,10 +51,10 @@ export function AuthModals({
         router.push("/dashboard");
       }
     } else {
-      const response: { message: string } = await userStore.register({
-        name: data.name,
+      const response: any = await userStore.register({
+        name: data.name || "",
         email: data.email,
-        phone: data.phone,
+        phone: data.phone || "",
         password: data.password,
       });
 

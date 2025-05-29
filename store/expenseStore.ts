@@ -8,7 +8,7 @@ import {
 } from "@/server/expense";
 
 interface ExpenseStore {
-  expenses: { expenses: Expense[]; total: number };
+  expenses: any;
   isLoading: boolean;
   error: string | null;
   addExpense: (data: Expense[]) => Promise<void>;

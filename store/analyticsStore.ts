@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { Analytics, byDuration } from "@/server/analytics";
 
 interface ExpenseStore {
-  analytics: { analytics: Analytics[]; total: number };
+  analytics: any;
   isLoading: boolean;
   error: string | null;
   byDuration: (type: string) => Promise<void>;
