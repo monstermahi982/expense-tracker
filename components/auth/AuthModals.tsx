@@ -28,7 +28,7 @@ export function AuthModals({
 }) {
   const [view, setView] = useState<"login" | "register">(defaultView);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useUserStore();
+  const userStore = useUserStore();
   const router = useRouter();
 
   const {
@@ -41,19 +41,30 @@ export function AuthModals({
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
 
-    const response: { message: string } = await login({
-      email: data.email,
-      password: data.password,
-    });
+    if (view === "login") {
+      const response: { message: string } = await userStore.login({
+        email: data.email,
+        password: data.password,
+      });
+      onClose();
+      if (response?.message) {
+        router.push("/dashboard");
+      }
+    } else {
+      const response: { message: string } = await userStore.register({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        password: data.password,
+      });
 
-    if (response?.message) {
-      router.push("/dashboard");
+      if (response?.message) {
+        setView("login");
+      }
     }
-    console.log(response, " responseresponse");
 
     setIsLoading(false);
     reset();
-    onClose();
   };
 
   return (

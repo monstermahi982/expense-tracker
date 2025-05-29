@@ -16,6 +16,7 @@ export interface RegisterInput {
   name: string;
   email: string;
   password: string;
+  phone: string;
 }
 
 export const loginUser = async (data: LoginInput): Promise<User> => {

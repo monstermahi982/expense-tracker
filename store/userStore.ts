@@ -45,7 +45,7 @@ export const useUserStore = create<AuthState>((set) => ({
     }
   },
 
-  register: async (data) => {
+  register: async (data: RegisterInput): Promise<any> => {
     set({ isLoading: true, error: null });
     try {
       const user = await registerUser(data);
@@ -54,6 +54,8 @@ export const useUserStore = create<AuthState>((set) => ({
       // Store in localStorage
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", user.token || "");
+
+      return user;
     } catch (err: any) {
       set({ error: err.response?.data?.message || "Registration failed" });
     } finally {
