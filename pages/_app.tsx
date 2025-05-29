@@ -1,4 +1,4 @@
-// pages/_app.tsx
+import Head from "next/head";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -41,17 +41,33 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router.pathname]);
 
   return (
-    <div className={inter.className}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <Component {...pageProps} />
-        <Toaster />
-        <ToastContainer />
-      </ThemeProvider>
-    </div>
+    <>
+      <Head>
+        <title>Neotrack</title>
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <meta
+          name="description"
+          content="This is expense tracking app for personal finance management"
+        />
+        <meta
+          name="keywords"
+          content="Neotrack, expense tracker, finance managment"
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta charSet="UTF-8" />
+      </Head>
+      <div className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Component {...pageProps} />
+          <Toaster />
+          <ToastContainer />
+        </ThemeProvider>
+      </div>
+    </>
   );
 }
