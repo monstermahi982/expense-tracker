@@ -16,8 +16,21 @@ import { LogOut, User, Settings, CreditCard } from "lucide-react";
 import { useRouter } from "next/router";
 
 export function UserNav() {
-  const userStore = useUserStore();
+  const currentUser = useUserStore((state) => state.currentUser);
+  const logout = useUserStore((state) => state.logout);
   const router = useRouter();
+
+  // Get user initials from name
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    const parts = name.trim().split(" ");
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  };
+
+  const userName = currentUser?.name || "User";
+  const userEmail = currentUser?.email || "user@example.com";
+  const userInitials = getInitials(userName);
 
   return (
     <DropdownMenu>
@@ -26,9 +39,9 @@ export function UserNav() {
           <Avatar className="h-9 w-9 border-2 border-primary dark:border-primary-foreground transition-all duration-300 hover:scale-105">
             <AvatarImage
               src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-              alt="@user"
+              alt={`@${userName}`}
             />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarFallback>{userInitials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -39,9 +52,9 @@ export function UserNav() {
       >
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
-            <p className="font-medium">John Doe</p>
+            <p className="font-medium">{userName}</p>
             <p className="text-sm text-muted-foreground">
-              john.doe@example.com
+              {userEmail}
             </p>
           </div>
         </div>
@@ -64,7 +77,7 @@ export function UserNav() {
         <DropdownMenuItem
           className="cursor-pointer text-destructive focus:text-destructive"
           onClick={() => {
-            userStore.logout();
+            logout();
             router.push("/");
           }}
         >
